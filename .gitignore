@@ -1,0 +1,29 @@
+# Python 缓存
+__pycache__/
+*.py[cod]
+*.so
+
+# 虚拟环境
+.venv/
+venv/
+ENV/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# 系统文件
+.DS_Store
+Thumbs.db
+
+# 日志和临时文件
+*.log
+*.tmp
+*.swp
+
+# 数据或模型
+*.npy
+*.npz
+*.pt
+*.pth
+*.h5
+*.onnx
