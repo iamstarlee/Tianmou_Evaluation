@@ -119,9 +119,6 @@ def event_visualization_td(diff_data, thresh=1.0, gain=1.0):
 
 
 def visualize_2x2_with_td_and_sd(i, input_array, denoised_paths, thresh=1.0, gain=1.0, save_path=None, save_npy_path=None):
-    import matplotlib.pyplot as plt
-    import torch
-    import numpy as np
 
     fig, axes = plt.subplots(2, 2, figsize=(8, 8))
     H, W = input_array.shape[1], input_array.shape[2]
@@ -172,106 +169,36 @@ def visualize_2x2_with_td_and_sd(i, input_array, denoised_paths, thresh=1.0, gai
 
     plt.tight_layout()
 
-    if save_path is not None and i % 200 == 0:
+    if save_path is not None: #  and i % 200 == 0
         plt.savefig(save_path, bbox_inches='tight')
         plt.close(fig)
 
     # 保存 diff_denoised 数组为 npy 文件（这里保存 sdl+sdr 叠加的差异）
-    cv2.imshow("vis_sd", sd_vis_denoised)
-    cv2.imshow("vis_td", td_vis_denoised)
-    cv2.waitKey(1)
+    # cv2.imshow("vis_sd", sd_vis_denoised)
+    # cv2.imshow("vis_td", td_vis_denoised)
+    # cv2.waitKey(1)
+
+
     if save_npy_path is not None:
         np.save(save_npy_path, diff_raw)
 
-# def visualize_2x2_with_td_and_sd(
-#     i,
-#     input_array,
-#     denoised_paths,
-#     thresh=1.0,
-#     gain=1.0,
-#     save_dir=None  # 新增：统一保存路径
-# ):
-#     import matplotlib.pyplot as plt
-#     import torch
-#     import numpy as np
-#     import cv2
-#     import os
+def visualize_td_raw_only(i, input_array, denoised_paths=None, thresh=1.0, gain=1.0,
+                          save_path=None, save_npy_path=None):
+    """
+    只绘制：第一行第一列 -> td Raw
+    denoised_paths 保留但不使用（为了兼容原调用）
+    """
 
-#     fig, axes = plt.subplots(2, 2, figsize=(8, 8))
-#     H, W = input_array.shape[1], input_array.shape[2]
+    td_raw = input_array[0]
+    diff_raw = cv2.resize(td_raw, (320, 160))
+    vis_raw = event_visualization(diff_raw, thresh, gain)  # BGR
 
-#     # 第一行：td通道
-#     td_raw = input_array[0]
-#     td_denoised = np.load(denoised_paths['td'])
-#     diff_raw = cv2.resize(td_raw, (320, 160))
-#     diff_denoised = cv2.resize(td_denoised, (320, 160))
+    # if save_path is not None:
+    #     os.makedirs(os.path.dirname(save_path), exist_ok=True) if os.path.dirname(save_path) else None
+    #     cv2.imwrite(save_path, vis_raw)  # 直接保存BGR为png/jpg
 
-#     vis_raw = event_visualization(diff_raw, thresh, gain)
-#     vis_denoised = event_visualization(diff_denoised, thresh, gain)
-
-#     axes[0, 0].imshow(vis_raw)
-#     axes[0, 0].set_title('td Raw')
-#     axes[0, 1].imshow(vis_denoised)
-#     axes[0, 1].set_title('td Denoised')
-#     for ax in axes[0]:
-#         ax.axis('off')
-
-#     # 第二行：sdl + sdr 通道
-#     sdl_raw = input_array[1]
-#     sdr_raw = input_array[2]
-#     sdl_denoised = np.load(denoised_paths['sdl'])
-#     sdr_denoised = np.load(denoised_paths['sdr'])
-
-#     sd_raw_np = np.stack([sdl_raw, sdr_raw], axis=2)
-#     sd_denoised_np = np.stack([sdl_denoised, sdr_denoised], axis=2)
-#     sd_raw = torch.from_numpy(sd_raw_np).float()
-#     sd_denoised = torch.from_numpy(sd_denoised_np).float()
-
-#     # 计算 Ix, Iy
-#     sdx_raw, sdy_raw = SD2XY(sd_raw)
-#     sdx_denoised, sdy_denoised = SD2XY(sd_denoised)
-
-#     diff_raw = sdx_raw.numpy() + sdy_raw.numpy()
-#     diff_denoised = sdx_denoised.numpy() + sdy_denoised.numpy()
-
-#     vis_raw = event_visualization(diff_raw, thresh, gain)
-#     vis_denoised = event_visualization(diff_denoised, thresh, gain)
-
-#     axes[1, 0].imshow(vis_raw)
-#     axes[1, 0].set_title('sdl+sdr Raw SD2XY')
-#     axes[1, 1].imshow(vis_denoised)
-#     axes[1, 1].set_title('sdl+sdr Denoised SD2XY')
-#     for ax in axes[1]:
-#         ax.axis('off')
-
-#     plt.tight_layout()
-
-#     # 如果指定保存目录，就创建 Ix / Iy 子目录
-#     ix_path, iy_path = None, None
-#     if save_dir is not None:
-#         ix_dir = os.path.join(save_dir, "Ix")
-#         iy_dir = os.path.join(save_dir, "Iy")
-#         os.makedirs(ix_dir, exist_ok=True)
-#         os.makedirs(iy_dir, exist_ok=True)
-
-#         ix_path = os.path.join(ix_dir, f"Ix_{i:06d}.npy")
-#         iy_path = os.path.join(iy_dir, f"Iy_{i:06d}.npy")
-
-#         np.save(ix_path, sdx_denoised.numpy())
-#         np.save(iy_path, sdy_denoised.numpy())
-
-#     # 可视化窗口
-#     cv2.imshow("vis", vis_denoised)
-#     cv2.waitKey(1)
-
-#     # 返回 Ix/Iy 路径
-#     return {
-#         "ix_path": ix_path,
-#         "iy_path": iy_path
-#     }
-
-
-
+    if save_npy_path is not None:
+        np.save(save_npy_path, diff_raw)
 
 def main(rod_dir, denoised_dir, out_dir, thresh=1.0, gain=1.0):
     os.makedirs(out_dir, exist_ok=True)
@@ -296,17 +223,13 @@ def main(rod_dir, denoised_dir, out_dir, thresh=1.0, gain=1.0):
             print(f"Processing {rod_file} ...")
             save_path = os.path.join(out_dir, rod_file.replace('.npy', '.png'))
             save_npy_path = os.path.join(out_dir, f"{i}_{rod_file.replace('.npy', '_diff_denoised.npy')}")
-            visualize_2x2_with_td_and_sd(i, input_array, denoised_paths, thresh, gain, save_path=save_path, save_npy_path=save_npy_path)
-            # visualize_2x2_with_td_and_sd(i, input_array, denoised_paths, thresh, gain, out_dir)
+            # visualize_2x2_with_td_and_sd(i, input_array, denoised_paths, thresh, gain, save_path=save_path, save_npy_path=save_npy_path)
+            visualize_td_raw_only(i, input_array, denoised_paths, thresh, gain, save_path=save_path, save_npy_path=save_npy_path)
+
 
 if __name__ == "__main__":
     data = 1200
-    rod_dir = f"multi/{data}/rod_output_cam0"
-    denoised_dir = f"multi/{data}/denoised_output_cam0"
-    out_dir = f"multi/{data}/Ixy"
+    rod_dir = f"output/12mm_focal_1/rod_output_cam0"
+    denoised_dir = f"output/12mm_focal_1/denoised_output_cam0"
+    out_dir = f"output/12mm_focal_1/Ixy"
     main(rod_dir, denoised_dir, out_dir, thresh=1.0, gain=10.0)
-
-    # rod_dir = "rod_output_cam0"
-    # denoised_dir = "denoised_output_cam0"
-    # out_dir = "save_ixy"
-    # main(rod_dir, denoised_dir, out_dir, thresh=1.0, gain=10.0)
