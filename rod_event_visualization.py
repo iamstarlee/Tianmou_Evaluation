@@ -2,7 +2,7 @@ import os
 import numpy as np
 import matplotlib.pyplot as plt
 import torch
-import cv2  # 需要安装 opencv-python
+import cv2  
 
 def SD2XY(sd_raw: torch.Tensor):
     '''
@@ -53,8 +53,7 @@ def SD2XY(sd_raw: torch.Tensor):
         return sdx.squeeze(1), sdy.squeeze(1)
 
 
-import numpy as np
-import cv2
+
 
 def event_visualization(diff_data, thresh=1.0, gain=1.0):
     H, W = diff_data.shape
@@ -85,7 +84,7 @@ def event_visualization(diff_data, thresh=1.0, gain=1.0):
 
     return rgb.astype(np.uint8)
 
-import numpy as np
+
 
 def event_visualization_td(diff_data, thresh=1.0, gain=1.0):
     H, W = diff_data.shape
@@ -178,9 +177,10 @@ def visualize_2x2_with_td_and_sd(i, input_array, denoised_paths, thresh=1.0, gai
     # cv2.imshow("vis_td", td_vis_denoised)
     # cv2.waitKey(1)
 
+    # if save_npy_path is not None:
+    #     np.save(save_npy_path, diff_raw)
 
-    if save_npy_path is not None:
-        np.save(save_npy_path, diff_raw)
+
 
 def visualize_td_raw_only(i, input_array, denoised_paths=None, thresh=1.0, gain=1.0,
                           save_path=None, save_npy_path=None):
@@ -191,14 +191,51 @@ def visualize_td_raw_only(i, input_array, denoised_paths=None, thresh=1.0, gain=
 
     td_raw = input_array[0]
     diff_raw = cv2.resize(td_raw, (320, 160))
+    td_denoised = np.load(denoised_paths['td'])
+    diff_denoised = cv2.resize(td_denoised, (320, 160))
+
     vis_raw = event_visualization(diff_raw, thresh, gain)  # BGR
+    vis_denoised = event_visualization(diff_denoised, thresh, gain)
+    
 
     # if save_path is not None:
     #     os.makedirs(os.path.dirname(save_path), exist_ok=True) if os.path.dirname(save_path) else None
-    #     cv2.imwrite(save_path, vis_raw)  # 直接保存BGR为png/jpg
+    #     cv2.imwrite(save_path, vis_denoised)  # 直接保存BGR为png/jpg
 
     if save_npy_path is not None:
-        np.save(save_npy_path, diff_raw)
+        np.save(save_npy_path, diff_denoised)
+
+
+
+def visualize_td_and_sd(i, input_array, denoised_paths, thresh=1.0, gain=1.0, save_path=None, save_npy_path=None):
+
+    fig, axes = plt.subplots(2, 2, figsize=(8, 8))
+    H, W = input_array.shape[1], input_array.shape[2]
+
+    # 第一行：td通道，直接差异比较
+    td_raw = input_array[0]
+    td_denoised = np.load(denoised_paths['td'])
+    diff_raw = cv2.resize(td_raw, (320, 160))
+    diff_denoised = cv2.resize(td_denoised, (320, 160))
+
+    vis_raw = event_visualization(diff_raw, thresh, gain)
+    vis_denoised = event_visualization(diff_denoised, thresh, gain)
+
+    axes[0, 0].imshow(cv2.cvtColor(vis_raw, cv2.COLOR_BGR2RGB))
+    axes[0, 0].set_title('td Raw')
+    axes[0, 1].imshow(cv2.cvtColor(vis_denoised, cv2.COLOR_BGR2RGB))
+    axes[0, 1].set_title('td Denoised')
+    for ax in axes[0]:
+        ax.axis('off')
+
+    plt.tight_layout()
+
+    if save_path is not None: #  and i % 200 == 0
+        plt.savefig(save_path, bbox_inches='tight')
+        plt.close(fig)
+
+
+
 
 def main(rod_dir, denoised_dir, out_dir, thresh=1.0, gain=1.0):
     os.makedirs(out_dir, exist_ok=True)
@@ -223,8 +260,8 @@ def main(rod_dir, denoised_dir, out_dir, thresh=1.0, gain=1.0):
             print(f"Processing {rod_file} ...")
             save_path = os.path.join(out_dir, rod_file.replace('.npy', '.png'))
             save_npy_path = os.path.join(out_dir, f"{i}_{rod_file.replace('.npy', '_diff_denoised.npy')}")
-            # visualize_2x2_with_td_and_sd(i, input_array, denoised_paths, thresh, gain, save_path=save_path, save_npy_path=save_npy_path)
-            visualize_td_raw_only(i, input_array, denoised_paths, thresh, gain, save_path=save_path, save_npy_path=save_npy_path)
+            visualize_2x2_with_td_and_sd(i, input_array, denoised_paths, thresh, gain, save_path=save_path, save_npy_path=save_npy_path)
+            # visualize_td_raw_only(i, input_array, denoised_paths, thresh, gain, save_path=save_path, save_npy_path=save_npy_path)
 
 
 if __name__ == "__main__":
