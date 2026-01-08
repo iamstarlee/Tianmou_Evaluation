@@ -47,11 +47,11 @@ def sorted_npy_list(folder):
 
 # ========== 数据路径 ==========
 data = 1200
-left_sdl_dir = f"multi/{data}/denoised_output_cam0/sdl"
-left_sdr_dir = f"multi/{data}/denoised_output_cam0/sdr"
+left_sdl_dir = f"output/12mm_focal_1/denoised_output_cam0/sdl"
+left_sdr_dir = f"output/12mm_focal_1/denoised_output_cam0/sdr"
 # right_sdl_dir = "denoised_output_cam1/sdl"
 # right_sdr_dir = "denoised_output_cam1/sdr"
-save_left_dir = f"multi/{data}/Poisson_denoised_out"
+save_left_dir = f"output/12mm_focal_1/Poisson_denoised_out"
 # save_right_dir = "Poisson_denoised_out/right"
 
 left_sdl_files = sorted_npy_list(left_sdl_dir)
@@ -90,10 +90,14 @@ for l_sdl, l_sdr in zip(left_sdl_files, left_sdr_files):
     # sdrc = sdrc_gpu.cpu().numpy()
 
     # 保存
+    os.makedirs(save_left_dir, exist_ok=True)
     np.save(os.path.join(save_left_dir, lf), sdlc)
     # np.save(os.path.join(save_right_dir, rf), sdrc)
+    save_poisson_left_path = 'output/12mm_focal_1/Poisson_denoised_visual'
+    os.makedirs(save_poisson_left_path, exist_ok=True)
+    cv2.imwrite(os.path.join(save_poisson_left_path, lf.replace('.npy', '.png')), ((sdlc + 50) * 2).astype(np.uint8))
 
     # 显示
-    cv2.imshow("sdlc", ((sdlc + 50) * 2).astype(np.uint8))
+    # cv2.imshow("sdlc", ((sdlc + 50) * 2).astype(np.uint8))
     # cv2.imshow("sdrc", ((sdrc + 50) * 2).astype(np.uint8))
-    cv2.waitKey(1)
+    # cv2.waitKey(1)

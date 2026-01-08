@@ -221,9 +221,9 @@ def extract_rod_only_simple(data_path, output_dir, camera_idx=0, N=1, parse_rod=
                     filename = f"rod_cam{camera_idx}_idx{idx:03d}_frame{frame_idx:04d}.npy"
                     filepath = os.path.join(camera_output_dir, filename)
                     img_hwc = np.transpose(frame, (1, 2, 0))  # (H, W, C)
-                    frame, mask = apply_elliptical_roi(img_hwc, radius_ratio=0.42, offset_x=-1, offset_y=-1)
-                    cv2.imshow("rod", cv2.resize(frame.astype(np.uint8), (320, 160)))
-                    cv2.waitKey(1)
+                    frame, mask = apply_elliptical_roi(img_hwc, radius_ratio=1, offset_x=-1, offset_y=-1)
+                    # cv2.imshow("rod", cv2.resize(frame.astype(np.uint8), (320, 160)))
+                    # cv2.waitKey(1)
                     frame = np.transpose(frame, (2, 0, 1))  # (C, H, W)
                     np.save(filepath, frame)
                     total_frames += 1
@@ -251,9 +251,14 @@ def extract_rod_only_simple(data_path, output_dir, camera_idx=0, N=1, parse_rod=
                     cone_filename = f"cone_cam{camera_idx}_idx{idx:03d}_{cone_key}.npy"
                     cone_path = os.path.join(camera_output_dir, cone_filename)
                     cone_data = cv2.resize(cone_data, (160, 160))
-                    cone_data, mask = apply_elliptical_roi(cone_data, radius_ratio=0.42, offset_x=-1, offset_y=-1)
-                    cv2.imshow("cone", cv2.resize(cone_data, (320, 160)))
-                    cv2.waitKey(1)
+                    cone_data, mask = apply_elliptical_roi(cone_data, radius_ratio=1, offset_x=-1, offset_y=-1)
+                    # cv2.imshow("cone", cv2.resize(cone_data, (320, 160)))
+                    rgb_filename = f"cone_cam{camera_idx}_idx{idx:03d}_{cone_key}.jpg"
+                    rgb_output = output_dir + "_rgb"
+                    os.makedirs(rgb_output, exist_ok=True)
+                    rgb_path = os.path.join(rgb_output, rgb_filename)
+                    cv2.imwrite(rgb_path, cone_data)
+                    # cv2.waitKey(1)
                     np.save(cone_path, cone_data)
 
                     cone_count += 1
@@ -445,7 +450,7 @@ def visualize_stereo_comparison(output_dir, start_frame=0, num_frames=5):
 if __name__ == "__main__":
     # 双目数据路径
     data = 600
-    data_path = f"Multi/{data}"  # 包含cone和rod子目录的双目数据
+    data_path = f"datasets/12mm_focal_1"  # 包含cone和rod子目录的双目数据
     # output_dir = "rod_output"  # 输出目录改为cone_rgb_output
     # output_dir = "cone_output"  # 输出目录改为cone_rgb_output
     
@@ -453,14 +458,14 @@ if __name__ == "__main__":
     # print("=== 提取CONE RGB图像 ===")
 
     # --- 每次运行前清空目录 ---
-    output_dir = f"multi/{data}/cone_output"  # 输出目录改为cone_rgb_output
+    output_dir = f"output/12mm_focal_1/cone_output"  # 输出目录改为cone_rgb_output
     extract_stereo_rod_simple(data_path, output_dir, N=1, parse_rod=False, parse_cone=True)
     
     # 如果需要同时解析ROD和CONE数据：
     # extract_stereo_rod_simple(data_path, output_dir, N=1, parse_rod=True, parse_cone=True)
     
     # 如果只需要ROD数据：
-    output_dir = f"multi/{data}/rod_output"
+    output_dir = f"output/12mm_focal_1/rod_output"
     extract_stereo_rod_simple(data_path, output_dir, N=1, parse_rod=True, parse_cone=False)
     
     # # 可视化左相机前10帧

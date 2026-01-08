@@ -387,11 +387,10 @@ def proces_scene(root_path, td_param, sd_param, save_path):
             sdl_save_path = os.path.join(sdl_dir, f"sdl_{de_file}")
             sdr_save_path = os.path.join(sdr_dir, f"sdr_{de_file}")
             td_save_path = os.path.join(td_dir, f"td_{de_file}")
-
+            
             np.save(sdl_save_path, LSD_reconstructed.cpu().numpy())
             np.save(sdr_save_path, RSD_reconstructed.cpu().numpy())
             np.save(td_save_path, TD_reconstructed.cpu().numpy())
-
             print(f"Saved sdl to {sdl_save_path}")
             print(f"Saved sdr to {sdr_save_path}")
             print(f"Saved td to {td_save_path}")
@@ -399,8 +398,8 @@ def proces_scene(root_path, td_param, sd_param, save_path):
 
 if __name__ == '__main__':
     data= 1200
-    root_path = f"multi/{data}/rod_output_cam0"  # 你的输入文件夹
-    save_path = f"multi/{data}/denoised_output_cam0"     # 保存降噪结果的文件夹
+    root_path = f"output/12mm_focal_1/rod_output_cam0"  # 你的输入文件夹
+    save_path = f"output/12mm_focal_1/denoised_output_cam0"     # 保存降噪结果的文件夹
 
     td_param = {
         'var_fil_ksize': 3,

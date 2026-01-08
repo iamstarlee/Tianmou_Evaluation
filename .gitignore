@@ -27,3 +27,8 @@ Thumbs.db
 *.pth
 *.h5
 *.onnx
+
+output/
+datasets/
+utils/
+*.mp4
